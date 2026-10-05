@@ -1,0 +1,6 @@
+{
+  "name": "Telegram Review Work Bot Studio",
+  "description": "Production-ready Telegram Bot in Node.js (Telegraf) & MongoDB with stylish Unicode styling, interactive web simulator, live admin panel, and complete downloadable codebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

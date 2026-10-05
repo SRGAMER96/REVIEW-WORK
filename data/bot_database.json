@@ -1,0 +1,91 @@
+{
+  "users": [
+    {
+      "_id": "usr_admin",
+      "telegramId": 9990001,
+      "username": "AdminChief",
+      "firstName": "System",
+      "lastName": "Admin",
+      "balance": 500,
+      "totalEarned": 500,
+      "totalWithdrawn": 0,
+      "isBanned": false,
+      "referredBy": null,
+      "referralCount": 5,
+      "referralEarnings": 45,
+      "cancelledTasks": [],
+      "createdAt": "2026-10-05T05:02:33.905Z"
+    },
+    {
+      "_id": "usr_alice",
+      "telegramId": 1000101,
+      "username": "AliceWorker",
+      "firstName": "Alice",
+      "lastName": "Vance",
+      "balance": 150.0,
+      "totalEarned": 300.0,
+      "totalWithdrawn": 150.0,
+      "isBanned": false,
+      "referredBy": null,
+      "referralCount": 1,
+      "referralEarnings": 25.0,
+      "cancelledTasks": [],
+      "createdAt": "2026-10-05T05:02:33.906Z"
+    },
+    {
+      "_id": "usr_1791176944953_rxz1",
+      "balance": 200.0,
+      "totalEarned": 1200.0,
+      "totalWithdrawn": 1000.0,
+      "isBanned": false,
+      "banReason": "",
+      "referralCount": 0,
+      "referralEarnings": 0,
+      "cancelledTasks": [],
+      "createdAt": "2026-10-05T05:09:04.953Z",
+      "telegramId": 8962632792,
+      "username": "SRGAMER96",
+      "firstName": "ᏕᏒ_ᎶᏗᎷᏋᏒ96",
+      "lastName": "",
+      "referredBy": null
+    }
+  ],
+  "tasks": [
+    {
+      "_id": "task_demo_01",
+      "title": "Review Task",
+      "targetLink": "https://qr-work-king.onrender.com",
+      "instructions": "Visit the link, give 5 stars rating with positive feedback, and upload your screenshot proof.",
+      "rewardAmount": 10.0,
+      "maxCompletions": 100,
+      "completedCount": 0,
+      "status": "active",
+      "createdBy": 8962632792,
+      "createdAt": "2026-10-05T06:00:00.000Z"
+    },
+    {
+      "_id": "task_gmaps_01",
+      "title": "Google Maps Review",
+      "targetLink": "https://maps.google.com/?cid=984729104",
+      "instructions": "Visit the Google Maps link, rate 5 stars ⭐, post a positive review, and upload a screenshot of your review.",
+      "rewardAmount": 15.0,
+      "maxCompletions": 50,
+      "completedCount": 0,
+      "status": "active",
+      "createdBy": 8962632792,
+      "createdAt": "2026-10-05T06:01:00.000Z"
+    }
+  ],
+  "submissions": [],
+  "withdrawals": [],
+  "settings": [
+    {
+      "_id": "set_global",
+      "key": "global_config",
+      "minWithdrawal": 50.0,
+      "referralPercent": 10,
+      "supportUsername": "SRGAMER96",
+      "currencySymbol": "₹"
+    }
+  ]
+}

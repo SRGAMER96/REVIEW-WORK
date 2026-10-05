@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: review_work_bot
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/telegram_review_bot
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7.0
+    container_name: review_bot_mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
