@@ -1,6 +1,7 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import { botManager } from './server/botEngine';
 import { getLocalDBSnapshot } from './server/db';
@@ -16,9 +17,14 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
+
+// Health check endpoint for Render & Uptime monitoring
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), bot: botManager.getStatus().status });
+});
 
 // ============================================================================
 // 🤖 TELEGRAM BOT MANAGEMENT API
@@ -116,22 +122,44 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    const indexPath = path.join(distPath, 'index.html');
+
+    if (fs.existsSync(indexPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(indexPath);
+      });
+    } else {
+      console.warn('⚠️ dist/index.html not found. Serving lightweight health-check landing page.');
+      app.get('*', (req, res) => {
+        res.status(200).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><meta charset="utf-8"><title>Review Work Bot Server</title></head>
+            <body style="font-family: system-ui, sans-serif; background: #0b0f19; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center;">
+              <div style="background: #1e293b; padding: 32px 48px; border-radius: 16px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <h1 style="color: #38bdf8; margin-bottom: 8px;">🚀 Telegram Bot Server is Live!</h1>
+                <p style="color: #94a3b8; font-size: 16px; margin: 0 0 16px 0;">Bot is actively running and receiving updates via long polling.</p>
+                <div style="display: inline-block; background: #065f46; color: #34d399; padding: 6px 16px; border-radius: 9999px; font-weight: 600; font-size: 14px;">
+                  ● System Healthy (HTTP 200)
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
+      });
+    }
   }
 
-  // Auto-start bot if BOT_TOKEN is already present in process.env
-  if (process.env.BOT_TOKEN && process.env.ADMIN_USER_ID) {
-    console.log('Found BOT_TOKEN in environment variables, starting bot automatically...');
-    botManager.start({
-      token: process.env.BOT_TOKEN,
-      adminId: Number(process.env.ADMIN_USER_ID),
-      mongoUri: process.env.MONGO_URI,
-      supportUsername: process.env.SUPPORT_USERNAME,
-    });
-  }
+  // Auto-start bot on boot
+  const botToken = process.env.BOT_TOKEN || '8949126540:AAEC475bE115rUe9y99l-X5zT5l7HveB4v0';
+  console.log('Starting Telegram bot engine automatically on server boot...');
+  botManager.start({
+    token: botToken,
+    adminId: Number(process.env.ADMIN_USER_ID) || 8962632792,
+    mongoUri: process.env.MONGO_URI,
+    supportUsername: process.env.SUPPORT_USERNAME || 'SRGAMER96',
+  });
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Telegram Bot Studio Server running on port ${PORT}`);

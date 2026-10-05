@@ -47,7 +47,7 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
   const [activeUserId, setActiveUserId] = useState<number>(8962632792); // Admin @SRGAMER96 by default
   const [inAdminMenu, setInAdminMenu] = useState<boolean>(false);
   const currentUser = users.find((u) => u.telegramId === activeUserId) || users[0];
-  const isAdmin = currentUser.telegramId === 8962632792 || currentUser.telegramId === 9990001;
+  const isAdmin = currentUser.telegramId === 8962632792 || currentUser.telegramId === 8914279465 || currentUser.telegramId === 9990001;
 
   // Track chat histories for each user persona
   const [messagesByUser, setMessagesByUser] = useState<Record<number, IBotMessage[]>>({
@@ -380,17 +380,19 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
         text: `✅ ${toSansBold('𝗣𝗿𝗼𝗼𝗳 𝗦𝘂𝗯𝗺𝗶𝘁𝘁𝗲𝗱 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!')}\n\nTask: ${toSansBold(task.title)}\nReward: $${task.rewardAmount.toFixed(2)}\n\nYour submission is now **Pending Admin Review**. You will be notified automatically as soon as it is verified! 🔔`,
       });
 
-      // Send instant review notification card to Admin Chief (ID: 9990001)
-      addMessage(9990001, {
-        sender: 'bot',
-        text: `📥 ${toSansBold('𝗡𝗲𝘄 𝗥𝗲𝘃𝗶𝗲𝘄 𝗣𝗿𝗼𝗼𝗳 𝗦𝘂𝗯𝗺𝗶𝘀𝘀𝗶𝗼𝗻!')}\n\n👤 ${toSansBold('𝗨𝘀𝗲𝗿')}: ${currentUser.firstName} (@${currentUser.username || 'N/A'})\n🆔 ${toSansBold('𝗜𝗗')}: \`${currentUser.telegramId}\`\n📋 ${toSansBold('𝗧𝗮𝘀𝗸')}: ${task.title}\n💰 ${toSansBold('𝗥𝗲𝘄𝗮𝗿𝗱')}: $${task.rewardAmount.toFixed(2)}\n\n📝 Proof:\n"${text}"`,
+      // Send instant review notification card to Admins (8962632792 & 8914279465)
+      const adminProofMsg = {
+        sender: 'bot' as const,
+        text: `📥 ${toSansBold('𝗡𝗲𝘄 𝗥𝗲𝘃𝗶𝗲𝘄 𝗣𝗿𝗼𝗼𝗳 𝗦𝘂𝗯𝗺𝗶𝘀𝘀𝗶𝗼𝗻!')}\n\n👤 ${toSansBold('𝗨𝘀𝗲𝗿')}: ${currentUser.firstName} (@${currentUser.username || 'N/A'})\n🆔 ${toSansBold('𝗜𝗗')}: \`${currentUser.telegramId}\`\n📋 ${toSansBold('𝗧𝗮𝘀𝗸')}: ${task.title}\n💰 ${toSansBold('𝗥𝗲𝘄𝗮𝗿𝗱')}: ${settings.currencySymbol}${task.rewardAmount.toFixed(2)}\n\n📝 Proof:\n"${text}"`,
         inlineButtons: [
           [
             { text: STYLED_LABELS.APPROVE, callbackData: `proof_app_${newSubId}` },
             { text: STYLED_LABELS.REJECT, callbackData: `proof_rej_${newSubId}` },
           ],
         ],
-      });
+      };
+      addMessage(8962632792, adminProofMsg);
+      addMessage(8914279465, adminProofMsg);
       return;
     }
 
@@ -448,9 +450,9 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
         text: `✅ ${toSansBold('𝗪𝗶𝘁𝗵𝗱𝗿𝗮𝘄𝗮𝗹 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗦𝘂𝗯𝗺𝗶𝘁𝘁𝗲𝗱!')}\n\n💰 Amount: ${settings.currencySymbol}${amount.toFixed(2)}\n🆔 UPI ID: \`${upiId}\`\n\nYour request has been forwarded to the Administrator for UPI transfer.`,
       });
 
-      // Send instant withdrawal notification to Admin
-      addMessage(8962632792, {
-        sender: 'bot',
+      // Send instant withdrawal notification to Admins (8962632792 & 8914279465)
+      const adminWdMsg = {
+        sender: 'bot' as const,
         text: `💳 ${toSansBold('𝗡𝗲𝘄 𝗪𝗶𝘁𝗵𝗱𝗿𝗮𝘄𝗮𝗹 𝗥𝗲𝗾𝘂𝗲𝘀𝘁!')}\n\n👤 ${toSansBold('𝗨𝘀𝗲𝗿')}: ${currentUser.firstName} (@${currentUser.username || 'N/A'})\n🆔 ${toSansBold('𝗜𝗗')}: \`${currentUser.telegramId}\`\n💰 ${toSansBold('𝗔𝗺𝗼𝘂𝗻𝘁')}: ${settings.currencySymbol}${amount.toFixed(2)}\n🆔 ${toSansBold('𝗨𝗣𝗜 𝗜𝗗')}: \`${upiId}\``,
         inlineButtons: [
           [
@@ -458,7 +460,9 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
             { text: STYLED_LABELS.REJECT, callbackData: `with_rej_${newWdId}` },
           ],
         ],
-      });
+      };
+      addMessage(8962632792, adminWdMsg);
+      addMessage(8914279465, adminWdMsg);
     }
 
     // 6. ADMIN BUTTONS & WIZARDS

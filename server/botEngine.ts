@@ -85,6 +85,17 @@ class BotManager {
     const token = config.token.trim();
     const adminId = Number(config.adminId);
 
+    // Multi-Admin Configuration:
+    // Both 8962632792 (Creator Admin) and 8914279465 (Co-Admin) have 100% full administrator rights
+    const ADMIN_IDS: number[] = [8962632792, 8914279465];
+    if (adminId && !ADMIN_IDS.includes(adminId)) {
+      ADMIN_IDS.push(adminId);
+    }
+    const isAdmin = (id: any): boolean => {
+      const num = Number(id);
+      return !isNaN(num) && ADMIN_IDS.includes(num);
+    };
+
     if (!token) {
       this.state.status = 'error';
       this.state.errorMessage = 'Bot Token is required';
@@ -129,7 +140,7 @@ class BotManager {
           [STYLED_LABELS.WITHDRAW, STYLED_LABELS.SUPPORT],
         ];
 
-        if (userId === adminId) {
+        if (isAdmin(userId)) {
           rows.push([STYLED_LABELS.ADMIN_PANEL]);
         }
 
@@ -233,7 +244,7 @@ class BotManager {
       // Handle Cancel Operation
       bot.hears(['❌ 𝗖𝗮𝗻𝗰𝗲𝗹 𝗢𝗽𝗲𝗿𝗮𝘁𝗶𝗼𝗻', '/cancel'], async (ctx: any) => {
         userStateMap.delete(ctx.from.id);
-        if (ctx.from.id === adminId) {
+        if (isAdmin(ctx.from.id)) {
           return ctx.reply(`✅ Operation cancelled. Returned to ${toSansBold('𝗔𝗱𝗺𝗶𝗻 𝗣𝗮𝗻𝗲𝗹')}.`, adminPanelKeyboard);
         }
         return ctx.reply(`✅ Operation cancelled. Returned to ${toSansBold('𝗠𝗮𝗶𝗻 𝗠𝗲𝗻𝘂')}.`, getMainMenuKeyboard(ctx.from.id));
@@ -254,7 +265,7 @@ class BotManager {
           `• Follow the link, complete the review, and submit screenshot proof.\n` +
           `• Once approved by admin, earnings are credited instantly!\n` +
           `• Withdraw your balance via UPI anytime!\n\n` +
-          (ctx.from.id === adminId ? `👑 ${toSansBold('𝗬𝗼𝘂 𝗮𝗿𝗲 𝗹𝗼𝗴𝗴𝗲𝗱 𝗶𝗻 𝗮𝘀 𝗦𝘆𝘀𝘁𝗲𝗺 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿.')}\n\n` : '') +
+          (isAdmin(ctx.from.id) ? `👑 ${toSansBold('𝗬𝗼𝘂 𝗮𝗿𝗲 𝗹𝗼𝗴𝗴𝗲𝗱 𝗶𝗻 𝗮𝘀 𝗦𝘆𝘀𝘁𝗲𝗺 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿.')}\n\n` : '') +
           `👇 Select an option from the menu below:`;
 
         return ctx.reply(welcomeText, getMainMenuKeyboard(ctx.from.id));
@@ -468,10 +479,14 @@ class BotManager {
                 ],
               ]);
 
-              if (proofType === 'photo') {
-                await bot.telegram.sendPhoto(adminId, proofContent, { caption: adminNotice, ...inlineBtns });
-              } else {
-                await bot.telegram.sendMessage(adminId, adminNotice, inlineBtns);
+              for (const aId of ADMIN_IDS) {
+                try {
+                  if (proofType === 'photo') {
+                    await bot.telegram.sendPhoto(aId, proofContent, { caption: adminNotice, ...inlineBtns });
+                  } else {
+                    await bot.telegram.sendMessage(aId, adminNotice, inlineBtns);
+                  }
+                } catch (e) {}
               }
             } catch (e) {}
             return;
@@ -537,27 +552,29 @@ class BotManager {
 
             this.addLog('info', `User ${fromId} requested withdrawal of ${settings.currencySymbol}${amount.toFixed(2)} to UPI: ${upiId}`);
 
-            // Notify Admin strictly with "UPI ID" field as requested!
-            try {
-              await bot.telegram.sendMessage(
-                adminId,
-                `💳 ${toSansBold('𝗡𝗲𝘄 𝗪𝗶𝘁𝗵𝗱𝗿𝗮𝘄𝗮𝗹 𝗥𝗲𝗾𝘂𝗲𝘀𝘁!')}\n\n` +
-                  `👤 User: @${user.username || 'None'} (ID: ${user.telegramId})\n` +
-                  `💰 Amount: ${settings.currencySymbol}${amount.toFixed(2)}\n` +
-                  `🆔 ${toSansBold('𝗨𝗣𝗜 𝗜𝗗')}: ${upiId}`,
-                Markup.inlineKeyboard([
-                  [
-                    Markup.button.callback('✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗲', `with_app_${wd._id}`),
-                    Markup.button.callback('❌ 𝗥𝗲𝗷𝗲𝗰𝘁', `with_rej_${wd._id}`),
-                  ],
-                ])
-              );
-            } catch (e) {}
+            // Notify Admins strictly with "UPI ID" field as requested!
+            for (const aId of ADMIN_IDS) {
+              try {
+                await bot.telegram.sendMessage(
+                  aId,
+                  `💳 ${toSansBold('𝗡𝗲𝘄 𝗪𝗶𝘁𝗵𝗱𝗿𝗮𝘄𝗮𝗹 𝗥𝗲𝗾𝘂𝗲𝘀𝘁!')}\n\n` +
+                    `👤 User: @${user.username || 'None'} (ID: ${user.telegramId})\n` +
+                    `💰 Amount: ${settings.currencySymbol}${amount.toFixed(2)}\n` +
+                    `🆔 ${toSansBold('𝗨𝗣𝗜 𝗜𝗗')}: ${upiId}`,
+                  Markup.inlineKeyboard([
+                    [
+                      Markup.button.callback('✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗲', `with_app_${wd._id}`),
+                      Markup.button.callback('❌ 𝗥𝗲𝗷𝗲𝗰𝘁', `with_rej_${wd._id}`),
+                    ],
+                  ])
+                );
+              } catch (e) {}
+            }
             return;
           }
 
           // D. Admin Add Work Wizard (EXACTLY 2 STEPS: Link -> Message -> Done/Cancel)
-          if (fromId === adminId) {
+          if (isAdmin(fromId)) {
             if (step === 'ADMIN_ADD_LINK') {
               currentSession.data.draft.targetLink = rawText;
               currentSession.step = 'ADMIN_ADD_MESSAGE';
@@ -904,7 +921,7 @@ class BotManager {
 
         // G. ADMIN PANEL MASTER BUTTON
         if (norm.includes('admin') || rawText === STYLED_LABELS.ADMIN_PANEL) {
-          if (fromId !== adminId) return ctx.reply('⛔ Access denied.');
+          if (!isAdmin(fromId)) return ctx.reply('⛔ Access denied.');
           userStateMap.delete(fromId);
           return ctx.reply(
             `👑 ${toSansBold('𝗔𝗱𝗺𝗶𝗻 𝗖𝗼𝗻𝘁𝗿𝗼𝗹 𝗣𝗮𝗻𝗲𝗹')} 👑\n\n` +
@@ -923,7 +940,7 @@ class BotManager {
         // ========================================================================
         // 3. ADMIN PANEL ACTIONS (fromId === adminId)
         // ========================================================================
-        if (fromId === adminId) {
+        if (isAdmin(fromId)) {
           // ADD WORK (2 STEPS: Link -> Message -> Done/Cancel)
           if (norm.includes('add') || rawText.includes('ADD WORK') || rawText === STYLED_LABELS.ADD_WORK) {
             userStateMap.set(fromId, {
@@ -1061,7 +1078,7 @@ class BotManager {
 
       // Confirm / Publish Task from Preview
       bot.action('admin_confirm_task', async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const currentSession = userStateMap.get(ctx.from.id);
         const draft = currentSession?.data?.draft;
         const settings = await getSettings();
@@ -1113,7 +1130,7 @@ class BotManager {
 
       // Cancel Task Creation
       bot.action('admin_cancel_task', async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         userStateMap.delete(ctx.from.id);
         await ctx.answerCbQuery('Cancelled.');
         await ctx.editMessageText(`❌ ${toSansBold('𝗧𝗮𝘀𝗸 𝗖𝗿𝗲𝗮𝘁𝗶𝗼𝗻 𝗖𝗮𝗻𝗰𝗲𝗹𝗹𝗲𝗱')}`);
@@ -1122,7 +1139,7 @@ class BotManager {
 
       // Delete Task Action Callback
       bot.action(/admin_del_task_(.+)/, async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const taskId = ctx.match[1];
         await Task.findByIdAndUpdate(taskId, { status: 'deleted' });
         await ctx.answerCbQuery('Task deleted.');
@@ -1131,7 +1148,7 @@ class BotManager {
 
       // Proof Approval & Rejection Actions
       bot.action(/proof_app_(.+)/, async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const subId = ctx.match[1];
         const submission = await Submission.findById(subId).populate('task');
         const settings = await getSettings();
@@ -1192,7 +1209,7 @@ class BotManager {
       });
 
       bot.action(/proof_rej_(.+)/, async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const subId = ctx.match[1];
         const submission = await Submission.findById(subId).populate('task');
 
@@ -1223,7 +1240,7 @@ class BotManager {
 
       // Withdrawal Approval & Rejection Actions
       bot.action(/with_app_(.+)/, async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const wdId = ctx.match[1];
         const withdrawal = await Withdrawal.findById(wdId);
         const settings = await getSettings();
@@ -1255,7 +1272,7 @@ class BotManager {
       });
 
       bot.action(/with_rej_(.+)/, async (ctx: any) => {
-        if (ctx.from.id !== adminId) return;
+        if (!isAdmin(ctx.from.id)) return;
         const wdId = ctx.match[1];
         const withdrawal = await Withdrawal.findById(wdId);
         const settings = await getSettings();
