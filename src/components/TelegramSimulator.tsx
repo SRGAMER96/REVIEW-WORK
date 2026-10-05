@@ -47,7 +47,7 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
   const [activeUserId, setActiveUserId] = useState<number>(8962632792); // Admin @SRGAMER96 by default
   const [inAdminMenu, setInAdminMenu] = useState<boolean>(false);
   const currentUser = users.find((u) => u.telegramId === activeUserId) || users[0];
-  const isAdmin = currentUser.telegramId === 8962632792 || currentUser.telegramId === 8914279465 || currentUser.telegramId === 9990001;
+  const isAdmin = currentUser.telegramId === 8962632792 || currentUser.telegramId === 9990001;
 
   // Track chat histories for each user persona
   const [messagesByUser, setMessagesByUser] = useState<Record<number, IBotMessage[]>>({
@@ -392,7 +392,6 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
         ],
       };
       addMessage(8962632792, adminProofMsg);
-      addMessage(8914279465, adminProofMsg);
       return;
     }
 
@@ -462,7 +461,6 @@ export const TelegramSimulator: React.FC<TelegramSimulatorProps> = ({
         ],
       };
       addMessage(8962632792, adminWdMsg);
-      addMessage(8914279465, adminWdMsg);
     }
 
     // 6. ADMIN BUTTONS & WIZARDS

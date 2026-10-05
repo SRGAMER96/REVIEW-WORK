@@ -85,9 +85,9 @@ class BotManager {
     const token = config.token.trim();
     const adminId = Number(config.adminId);
 
-    // Multi-Admin Configuration:
-    // Both 8962632792 (Creator Admin) and 8914279465 (Co-Admin) have 100% full administrator rights
-    const ADMIN_IDS: number[] = [8962632792, 8914279465];
+    // Administrator Configuration:
+    // Only 8962632792 (Creator Admin) has full administrator rights.
+    const ADMIN_IDS: number[] = [8962632792];
     if (adminId && !ADMIN_IDS.includes(adminId)) {
       ADMIN_IDS.push(adminId);
     }
